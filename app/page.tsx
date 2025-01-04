@@ -2,7 +2,7 @@
 
 import { Player } from "@remotion/player";
 import type { NextPage } from "next";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useEffect, useState } from "react";
 import { Main } from "@/remotion/MyComp/Main";
 import {
   CompositionProps,
@@ -19,11 +19,18 @@ import { Spacing } from "@/components/Spacing";
 import { AuthButton } from "@/components/AuthButton";
 import { StyleSelector } from "@/components/StyleSelector";
 import { SubtitleStyle } from "@/types/subtitles";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Home: NextPage = () => {
   const [text, setText] = useState<string>(defaultMyCompProps.title);
   const [subtitles, setSubtitles] = useState(defaultMyCompProps.subtitles);
   const [selectedStyle, setSelectedStyle] = useState<SubtitleStyle>("tiktok-black");
+  const [subtitleText, setSubtitleText] = useState<string>("");
   const [fontSize, setFontSize] = useState<number>(70);
 
   const inputProps: z.infer<typeof CompositionProps> = useMemo(() => {
@@ -33,7 +40,8 @@ const Home: NextPage = () => {
     };
   }, [text, subtitles]);
 
-  const handleSubtitleInput = (value: string) => {
+  const handleSubtitleInput = useCallback((value: string) => {
+    setSubtitleText(value);
     // Split by newlines and create subtitle phrases
     const lines = value.split('\n').filter(line => line.trim());
     const phrases = lines.map((line, index) => ({
@@ -46,81 +54,103 @@ const Home: NextPage = () => {
       y: 50,
     }));
     setSubtitles({ phrases, fontSize });
-  };
+  }, [selectedStyle, fontSize]);
+
+  // Update subtitles when style or font size changes
+  useEffect(() => {
+    if (subtitleText) {
+      handleSubtitleInput(subtitleText);
+    }
+  }, [selectedStyle, fontSize, handleSubtitleInput]);
 
   return (
-    <div className="space-y-8 p-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Funkypop Video Maker</h1>
-        <AuthButton />
-      </div>
-      <div className="max-w-screen-md m-auto mb-5">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Text Style
-          </label>
-          <StyleSelector
-            selectedStyle={selectedStyle}
-            onStyleSelect={setSelectedStyle}
-          />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Funkypop Video Maker</h1>
+          <AuthButton />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Font Size: {fontSize}px
-          </label>
-          <input
-            type="range"
-            min="20"
-            max="120"
-            value={fontSize}
-            onChange={(e) => {
-              const newSize = parseInt(e.target.value);
-              setFontSize(newSize);
-              if (subtitles?.phrases) {
-                handleSubtitleInput(subtitles.phrases.map(p => p.text).join('\n'));
-              }
-            }}
-            className="w-full"
-          />
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Video Preview */}
+          <div className="lg:col-span-8">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <Player
+                component={Main}
+                inputProps={inputProps}
+                durationInFrames={DURATION_IN_FRAMES}
+                fps={VIDEO_FPS}
+                compositionHeight={VIDEO_HEIGHT}
+                compositionWidth={VIDEO_WIDTH}
+                style={{
+                  width: "100%",
+                }}
+                controls
+                autoPlay
+              />
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="lg:col-span-4">
+            <Accordion type="single" collapsible className="w-full">
+              {/* Subtitle Editor */}
+              <AccordionItem value="subtitles">
+                <AccordionTrigger className="text-lg font-semibold">
+                  Edit Subtitles
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4 p-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Enter Subtitles
+                      </label>
+                      <textarea
+                        className="w-full h-32 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter your subtitles (one line per phrase)"
+                        value={subtitleText}
+                        onChange={(e) => handleSubtitleInput(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Font Size: {fontSize}px
+                      </label>
+                      <input
+                        type="range"
+                        min="20"
+                        max="120"
+                        value={fontSize}
+                        onChange={(e) => {
+                          const newSize = parseInt(e.target.value);
+                          setFontSize(newSize);
+                        }}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Style Selector */}
+              <AccordionItem value="styles">
+                <AccordionTrigger className="text-lg font-semibold">
+                  Choose Style
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="p-4">
+                    <StyleSelector
+                      selectedStyle={selectedStyle}
+                      onStyleSelect={setSelectedStyle}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Enter Subtitles
-          </label>
-          <textarea
-            className="w-full h-32 p-2 border rounded"
-            placeholder="Enter your subtitles (one line per phrase)"
-            onChange={(e) => handleSubtitleInput(e.target.value)}
-          />
-        </div>
-        <div className="overflow-hidden rounded-geist shadow-[0_0_200px_rgba(0,0,0,0.15)] mb-10 mt-16">
-          <Player
-            component={Main}
-            inputProps={inputProps}
-            durationInFrames={DURATION_IN_FRAMES}
-            fps={VIDEO_FPS}
-            compositionHeight={VIDEO_HEIGHT}
-            compositionWidth={VIDEO_WIDTH}
-            style={{
-              // Can't use tailwind class for width since player's default styles take presedence over tailwind's,
-              // but not over inline styles
-              width: "100%",
-            }}
-            controls
-            autoPlay
-            loop
-          />
-        </div>
-        <RenderControls
-          text={text}
-          setText={setText}
-          inputProps={inputProps}
-        ></RenderControls>
-        <Spacing></Spacing>
-        <Spacing></Spacing>
-        <Spacing></Spacing>
-        <Spacing></Spacing>
-        <Tips></Tips>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ interface StylePreviewProps {
   onClick: () => void;
 }
 
-const PREVIEW_TEXT = "Sample Text";
+const PREVIEW_TEXT = "Preview Text";
 
 const StylePreview: React.FC<StylePreviewProps> = ({ style, isSelected, onClick }) => {
   // Convert style name to component name (e.g., 'tiktok-black' -> 'TiktokBlack')
@@ -20,26 +20,21 @@ const StylePreview: React.FC<StylePreviewProps> = ({ style, isSelected, onClick 
 
   return (
     <div
-      className={`relative cursor-pointer rounded-lg overflow-hidden bg-gray-800 aspect-video
+      className={`relative cursor-pointer rounded-lg overflow-hidden bg-gray-800 p-4 h-24
         ${isSelected ? 'ring-2 ring-blue-500' : 'hover:ring-2 hover:ring-blue-300'}`}
       onClick={onClick}
     >
-      <div className="absolute inset-0 flex items-center justify-center">
-        <StyleComponent x={50} y={50}>
+      <div className="absolute inset-0 flex items-center justify-center scale-50 transform">
+        <StyleComponent x={50} y={50} fontSize={40}>
           {PREVIEW_TEXT}
         </StyleComponent>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2 text-white text-sm">
+      <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2 text-white text-xs">
         {style}
       </div>
     </div>
   );
 };
-
-interface StyleSelectorProps {
-  selectedStyle: SubtitleStyle;
-  onStyleSelect: (style: SubtitleStyle) => void;
-}
 
 const AVAILABLE_STYLES: SubtitleStyle[] = [
   'tiktok-black',
@@ -57,12 +52,15 @@ const AVAILABLE_STYLES: SubtitleStyle[] = [
   'ali'
 ];
 
-export const StyleSelector: React.FC<StyleSelectorProps> = ({
+export const StyleSelector: React.FC<{
+  selectedStyle: SubtitleStyle;
+  onStyleSelect: (style: SubtitleStyle) => void;
+}> = ({
   selectedStyle,
   onStyleSelect,
 }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+    <div className="grid grid-cols-2 gap-4">
       {AVAILABLE_STYLES.map((style) => (
         <StylePreview
           key={style}
