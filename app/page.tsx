@@ -16,6 +16,7 @@ import { z } from "zod";
 import { RenderControls } from "@/components/RenderControls";
 import { Tips } from "@/components/Tips";
 import { Spacing } from "@/components/Spacing";
+import { AuthButton } from "@/components/AuthButton";
 
 const Home: NextPage = () => {
   const [text, setText] = useState<string>(defaultMyCompProps.title);
@@ -27,7 +28,11 @@ const Home: NextPage = () => {
   }, [text]);
 
   return (
-    <div>
+    <div className="space-y-8 p-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Funkypop Video Maker</h1>
+        <AuthButton />
+      </div>
       <div className="max-w-screen-md m-auto mb-5">
         <div className="overflow-hidden rounded-geist shadow-[0_0_200px_rgba(0,0,0,0.15)] mb-10 mt-16">
           <Player
