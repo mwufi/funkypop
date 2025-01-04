@@ -4,6 +4,7 @@ import {
   Sequence,
   useCurrentFrame,
   useVideoConfig,
+  Video,
 } from "remotion";
 import { CompositionProps } from "@/types/constants";
 import React from "react";
@@ -40,9 +41,12 @@ const sampleSubtitles: SubtitleData = {
   ],
 };
 
-export const Main = ({ title, subtitles = sampleSubtitles }: z.infer<typeof CompositionProps>) => {
+export const Main = ({ title, subtitles = sampleSubtitles, backgroundVideo }: z.infer<typeof CompositionProps> & { backgroundVideo?: string }) => {
   return (
     <AbsoluteFill className="bg-gray-900">
+      {backgroundVideo && (
+        <Video src={backgroundVideo} className="absolute inset-0 w-full h-full object-cover" />
+      )}
       {subtitles.phrases.map((phrase, index) => (
         <SubtitleRenderer key={index} phrase={phrase} />
       ))}

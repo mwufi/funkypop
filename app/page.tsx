@@ -61,8 +61,19 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (subtitleText) {
       handleSubtitleInput(subtitleText);
+    } else if (subtitles?.phrases.length > 0) {
+      // If there's no subtitle text but there are existing phrases,
+      // update all phrases with the new style
+      setSubtitles(prev => ({
+        ...prev,
+        phrases: prev.phrases.map(phrase => ({
+          ...phrase,
+          style: selectedStyle,
+          fontSize,
+        })),
+      }));
     }
-  }, [selectedStyle, fontSize, handleSubtitleInput]);
+  }, [selectedStyle, fontSize, handleSubtitleInput, subtitleText]);
 
   return (
     <div className="min-h-screen bg-gray-50">

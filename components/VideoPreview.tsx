@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Player } from "@remotion/player";
 import { z } from "zod";
 import { CompositionProps } from "@/types/constants";
+import { MediaTracksList } from './MediaTracksList';
 
 interface VideoPreviewProps {
     inputProps: z.infer<typeof CompositionProps>;
@@ -30,6 +31,27 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
     const [selectedRatio, setSelectedRatio] = useState<AspectRatio>("9:16");
     const { width, height } = aspectRatios[selectedRatio];
 
+    // Sample track for testing
+    const [tracks, setTracks] = useState([
+        {
+            id: '1',
+            name: 'forest.mp4',
+            url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/forest.mp4?t=2025-01-04T22%3A36%3A21.098Z',
+            type: 'video' as const,
+        }
+    ]);
+
+    const handleAddTrack = () => {
+        // TODO: Implement file selection
+        console.log('Add track clicked');
+    };
+
+    // Combine the background video URL with other input props
+    const combinedInputProps = useMemo(() => ({
+        ...inputProps,
+        backgroundVideo: tracks[0]?.url,
+    }), [inputProps, tracks]);
+
     return (
         <div className="bg-[#fdf6e3] rounded-xl p-6 shadow-sm border border-[#eee8d5]">
             {/* Video Container */}
@@ -57,7 +79,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
                         `}>
                             <Player
                                 component={component}
-                                inputProps={inputProps}
+                                inputProps={combinedInputProps}
                                 durationInFrames={durationInFrames}
                                 fps={fps}
                                 compositionHeight={height}
@@ -75,6 +97,14 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Media Tracks */}
+            <div className="mb-4">
+                <MediaTracksList
+                    tracks={tracks}
+                    onAddTrack={handleAddTrack}
+                />
             </div>
 
             {/* Controls */}
