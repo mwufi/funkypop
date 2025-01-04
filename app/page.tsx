@@ -45,15 +45,26 @@ const Home: NextPage = () => {
     setSubtitleText(value);
     // Split by newlines and create subtitle phrases
     const lines = value.split('\n').filter(line => line.trim());
-    const phrases = lines.map((line, index) => ({
-      text: line,
-      startFrame: index * 30,
-      endFrame: (index + 1) * 30 - 1,
-      style: selectedStyle,
-      fontSize,
-      x: 50,
-      y: 50,
-    }));
+    const wordsPerSecond = 3.7;
+    const framesPerSecond = 30;
+    const minDuration = framesPerSecond;
+
+    let currentFrame = 0;
+    const phrases = lines.map((line) => {
+      const wordCount = line.split(/[^\p{L}\p{N}]+/u).filter(Boolean).length;
+      const duration = Math.max(minDuration, Math.ceil(wordCount / wordsPerSecond * framesPerSecond));
+      const phrase = {
+        text: line,
+        startFrame: currentFrame,
+        endFrame: currentFrame + duration - 1,
+        style: selectedStyle,
+        fontSize,
+        x: 50,
+        y: 50,
+      };
+      currentFrame += duration;
+      return phrase;
+    });
     setSubtitles({ phrases, fontSize });
   }, [selectedStyle, fontSize]);
 
@@ -74,6 +85,8 @@ const Home: NextPage = () => {
       }));
     }
   }, [selectedStyle, fontSize, handleSubtitleInput, subtitleText]);
+
+  const subtitleTimeMax = subtitles?.phrases.reduce((max, phrase) => Math.max(max, phrase.endFrame), 0) || 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -96,7 +109,7 @@ const Home: NextPage = () => {
               <VideoPreview
                 component={Main}
                 inputProps={inputProps}
-                durationInFrames={DURATION_IN_FRAMES}
+                durationInFrames={Math.max(150, subtitleTimeMax)}
                 fps={VIDEO_FPS}
                 height={VIDEO_HEIGHT}
                 width={VIDEO_WIDTH}

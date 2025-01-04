@@ -14,11 +14,14 @@ interface TextStyleProps {
   fontSize?: number;
 }
 
-const DEFAULT_FONT_SIZE = 70;
+const DEFAULT_FONT_SIZE = 56;
 
 const baseStyles: React.CSSProperties = {
   position: 'absolute',
   transform: 'translate(-50%, -50%)',
+  textAlign: 'center',
+  width: 'max-content',
+  maxWidth: '80%',
 };
 
 export const TiktokBlack: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, fontSize = DEFAULT_FONT_SIZE }) => (
@@ -28,8 +31,8 @@ export const TiktokBlack: React.FC<TextStyleProps> = ({ children, x = 50, y = 50
     top: `${y}%`,
     backgroundColor: 'white',
     color: 'black',
-    padding: '10px 20px',
-    borderRadius: '5px',
+    padding: `${fontSize * 0.14}px ${fontSize * 0.28}px`,
+    borderRadius: `${fontSize * 0.07}px`,
     fontFamily: 'Inter',
     fontSize: `${fontSize}px`,
     fontWeight: 'bold',
@@ -44,7 +47,7 @@ export const TiktokWhiteBorder: React.FC<TextStyleProps> = ({ children, x = 50, 
     left: `${x}%`,
     top: `${y}%`,
     color: 'white',
-    textShadow: '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000',
+    textShadow: `${fontSize * 0.12}px ${fontSize * 0.12}px 0 #000, ${fontSize * -0.12}px ${fontSize * 0.12}px 0 #000, ${fontSize * 0.12}px ${fontSize * -0.12}px 0 #000, ${fontSize * -0.12}px ${fontSize * -0.12}px 0 #000`,
     fontFamily: 'Inter',
     fontSize: `${fontSize}px`,
     fontWeight: 'bold',
@@ -73,7 +76,7 @@ export const Shadow: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, fon
     left: `${x}%`,
     top: `${y}%`,
     color: 'white',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+    textShadow: `${fontSize * 0.03}px ${fontSize * 0.03}px ${fontSize * 0.06}px rgba(0, 0, 0, 0.5)`,
     fontFamily: 'Poppins',
     fontSize: `${fontSize}px`,
     fontWeight: '600',
@@ -89,7 +92,7 @@ export const Uppercase: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, 
     top: `${y}%`,
     color: 'white',
     textTransform: 'uppercase',
-    letterSpacing: '2px',
+    letterSpacing: `${fontSize * 0.03}px`,
     fontFamily: 'Oswald',
     fontSize: `${fontSize}px`,
     fontWeight: 'bold',
@@ -122,8 +125,8 @@ export const Logan: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, font
     fontFamily: 'Oswald',
     fontSize: `${fontSize}px`,
     fontWeight: 'bold',
-    letterSpacing: '1px',
-    textShadow: '3px 3px 0 #000',
+    letterSpacing: `${fontSize * 0.014}px`,
+    textShadow: `${fontSize * 0.043}px ${fontSize * 0.043}px 0 #000`,
   }}>
     {children}
   </div>
@@ -139,7 +142,7 @@ export const Enrico: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, fon
     fontSize: `${fontSize}px`,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: '2px',
+    letterSpacing: `${fontSize * 0.03}px`,
   }}>
     {children}
   </div>
@@ -155,8 +158,8 @@ export const Mike: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, fontS
     fontSize: `${fontSize}px`,
     fontWeight: 'bold',
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: '8px 16px',
-    borderRadius: '4px',
+    padding: `${fontSize * 0.11}px ${fontSize * 0.23}px`,
+    borderRadius: `${fontSize * 0.06}px`,
   }}>
     {children}
   </div>
@@ -171,7 +174,7 @@ export const Devin: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, font
     fontFamily: 'Poppins',
     fontSize: `${fontSize}px`,
     fontWeight: 'bold',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
+    textShadow: `${fontSize * 0.03}px ${fontSize * 0.03}px ${fontSize * 0.06}px rgba(0, 0, 0, 0.3)`,
   }}>
     {children}
   </div>
@@ -187,8 +190,8 @@ export const Hormozi: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, fo
     fontSize: `${fontSize}px`,
     fontWeight: '800',
     textTransform: 'uppercase',
-    letterSpacing: '3px',
-    textShadow: '2px 2px 0 #FF6B6B',
+    letterSpacing: `${fontSize * 0.043}px`,
+    textShadow: `${fontSize * 0.1}px ${fontSize * 0.1}px 0 #FF6B6B`,
   }}>
     {children}
   </div>
@@ -203,7 +206,7 @@ export const Masi: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, fontS
     fontFamily: 'Poppins',
     fontSize: `${fontSize}px`,
     fontWeight: 'bold',
-    textShadow: '1px 1px 3px rgba(0, 0, 0, 0.4)',
+    textShadow: `${fontSize * 0.05}px ${fontSize * 0.05}px ${fontSize * 0.1}px rgba(0, 0, 0, 0.4)`,
   }}>
     {children}
   </div>
@@ -219,9 +222,9 @@ export const Ali: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, fontSi
     fontSize: `${fontSize}px`,
     fontWeight: 'bold',
     backgroundColor: '#45B7D1',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    padding: `${fontSize * 0.14}px ${fontSize * 0.28}px`,
+    borderRadius: `${fontSize * 0.11}px`,
+    boxShadow: `${fontSize * 0.05}px ${fontSize * 0.05}px ${fontSize * 0.1}px rgba(0, 0, 0, 0.2)`,
   }}>
     {children}
   </div>
