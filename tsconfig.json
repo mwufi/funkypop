@@ -15,6 +15,10 @@
     "jsx": "preserve",
     "incremental": true,
     "noUnusedLocals": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"

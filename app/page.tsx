@@ -3,7 +3,7 @@
 import { Player } from "@remotion/player";
 import type { NextPage } from "next";
 import React, { useMemo, useState } from "react";
-import { Main } from "../remotion/MyComp/Main";
+import { Main } from "@/remotion/MyComp/Main";
 import {
   CompositionProps,
   defaultMyCompProps,
@@ -11,11 +11,11 @@ import {
   VIDEO_FPS,
   VIDEO_HEIGHT,
   VIDEO_WIDTH,
-} from "../types/constants";
+} from "@/types/constants";
 import { z } from "zod";
-import { RenderControls } from "../components/RenderControls";
-import { Tips } from "../components/Tips";
-import { Spacing } from "../components/Spacing";
+import { RenderControls } from "@/components/RenderControls";
+import { Tips } from "@/components/Tips";
+import { Spacing } from "@/components/Spacing";
 
 const Home: NextPage = () => {
   const [text, setText] = useState<string>(defaultMyCompProps.title);
