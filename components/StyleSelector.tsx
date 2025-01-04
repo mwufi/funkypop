@@ -30,7 +30,7 @@ const StylePreview: React.FC<StylePreviewProps> = ({ style, isSelected, onClick 
       onClick={onClick}
     >
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="transform scale-75">
+        <div className="w-full transform scale-75">
           <StyleComponent x={50} y={50} fontSize={24}>
             {displayText}
           </StyleComponent>

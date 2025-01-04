@@ -20,8 +20,9 @@ const baseStyles: React.CSSProperties = {
   position: 'absolute',
   transform: 'translate(-50%, -50%)',
   textAlign: 'center',
-  width: 'max-content',
-  maxWidth: '80%',
+  width: 'fit-content',
+  maxWidth: '90%',
+  whiteSpace: 'pre-line',
 };
 
 export const TiktokBlack: React.FC<TextStyleProps> = ({ children, x = 50, y = 50, fontSize = DEFAULT_FONT_SIZE }) => (
