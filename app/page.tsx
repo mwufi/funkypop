@@ -18,6 +18,7 @@ import { Tips } from "@/components/Tips";
 import { Spacing } from "@/components/Spacing";
 import { AuthButton } from "@/components/AuthButton";
 import { StyleSelector } from "@/components/StyleSelector";
+import { VideoPreview } from "@/components/VideoPreview";
 import { SubtitleStyle } from "@/types/subtitles";
 import {
   Accordion,
@@ -81,23 +82,14 @@ const Home: NextPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-6rem)]">
             {/* Video Preview */}
             <div className="lg:col-span-8 h-full">
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <Player
-                  component={Main}
-                  inputProps={inputProps}
-                  durationInFrames={DURATION_IN_FRAMES}
-                  fps={VIDEO_FPS}
-                  compositionHeight={VIDEO_HEIGHT}
-                  compositionWidth={VIDEO_WIDTH}
-                  style={{
-                    width: "100%",
-                  }}
-                  controls
-                  autoPlay
-                  loop={true}
-                  clickToPlay={false}
-                />
-              </div>
+              <VideoPreview
+                component={Main}
+                inputProps={inputProps}
+                durationInFrames={DURATION_IN_FRAMES}
+                fps={VIDEO_FPS}
+                height={VIDEO_HEIGHT}
+                width={VIDEO_WIDTH}
+              />
             </div>
 
             {/* Controls */}
