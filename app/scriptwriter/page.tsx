@@ -6,12 +6,12 @@ import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig, staticFile } fro
 import { TimingUtils, type MessageData, type MessageWithTiming } from './utils';
 
 const MESSAGES: MessageData[] = [
-    { type: 'grayMessage', text: "Hey, have you heard about that awesome new startup, Codeium? 🚀", showTime: true },
-    { type: 'blueMessage', text: "Oh yeah! The AI-powered coding assistant, right? It's amazing!" },
-    { type: 'grayMessage', text: "Exactly! It's revolutionizing how developers write code." },
-    { type: 'blueMessage', text: "Totally! I've been using it and it's increased my productivity so much." },
-    { type: 'blueMessage', text: "For me, it's the AI-powered code explanations. So helpful! 🤓" },
-    { type: 'grayMessage', text: "Plus, their free tier is super generous. It's a game-changer for devs." },
+    { type: 'grayMessage', text: "yo fam, u hear bout that lit af party this weekend? 🔥🎉", showTime: true },
+    { type: 'blueMessage', text: "omg yesss! the one w/ the sick beats and laser show, rite?" },
+    { type: 'grayMessage', text: "fr fr! it's gonna be straight fire, no cap 🚫🧢", delay: 30 },
+    { type: 'blueMessage', text: "i'm so hyped! heard they're doing a fit check contest too 👀", delay: 30 },
+    { type: 'blueMessage', text: "and bruh, the food trucks? gonna be bussin fr 🍔🌮", delay: 30 },
+    { type: 'grayMessage', text: "plus first 100 get that vip drip. we gotta roll up early, deadass ⏰", delay: 30 },
 ];
 
 const BASE_SIZE = '2.8rem';
@@ -163,7 +163,7 @@ const Message: React.FC<MessageProps> = ({
 
 const MyComposition = ({ bgImage = false, speedMultiplier = 1 }) => {
     const timingUtils = new TimingUtils(speedMultiplier);
-    
+
     // Calculate all message timings
     const messagesWithDelays = MESSAGES.reduce<MessageWithTiming[]>((acc, msg, i) => {
         const prevMessage = acc[i - 1];
@@ -237,7 +237,7 @@ const MyComposition = ({ bgImage = false, speedMultiplier = 1 }) => {
 
 export default function ScriptWriter() {
     const [speed, setSpeed] = useState(1);
-    
+
     return (
         <div style={{
             width: '100%',
@@ -270,7 +270,7 @@ export default function ScriptWriter() {
                 />
                 <span style={{ fontSize: '14px' }}>{speed}x</span>
             </div>
-            
+
             <div style={{
                 width: '100%',
                 maxWidth: '400px',
