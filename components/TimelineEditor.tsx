@@ -26,7 +26,15 @@ const TimelineEditor: React.FC<TimelineEditorProps> = ({
   const totalDuration = timeline.clips.reduce((sum, clip) => 
     Math.max(sum, clip.start + clip.duration), 0);
 
+  const handleDragStart = () => {
+    // Prevent scrolling during drag but keep scrollbar visible
+    document.body.style.pointerEvents = 'none';
+  };
+
   const handleDragEnd = (result: any) => {
+    // Restore pointer events
+    document.body.style.pointerEvents = '';
+
     if (!result.destination) return;
 
     const clips = Array.from(timeline.clips);
@@ -97,7 +105,7 @@ const TimelineEditor: React.FC<TimelineEditorProps> = ({
     <div className="space-y-4">
       {/* Timeline */}
       <div className="relative h-32 bg-[#93a1a1] rounded-lg overflow-hidden">
-        <DragDropContext onDragEnd={handleDragEnd}>
+        <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <Droppable droppableId="timeline" direction="horizontal">
             {(provided) => (
               <div

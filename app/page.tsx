@@ -124,7 +124,7 @@ const Home: NextPage = () => {
   const subtitleTimeMax = subtitles.phrases.reduce((max, phrase) => Math.max(max, phrase.endFrame), 0) || 0;
 
   return (
-    <main className="min-h-screen overflow-hidden">
+    <main className="min-h-screen">
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 bg-gray-50 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -150,16 +150,6 @@ const Home: NextPage = () => {
                   height={VIDEO_HEIGHT}
                   width={VIDEO_WIDTH}
                 />
-                {/* Media Tracks Editor */}
-                <div className="bg-white rounded-lg shadow p-4">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Media Tracks</h2>
-                  <MediaTrackEditor
-                    tracks={mediaTracks}
-                    totalFrames={300}
-                    onTrackUpdate={handleTrackUpdate}
-                    onPrimaryChange={handlePrimaryChange}
-                  />
-                </div>
               </div>
             </div>
 
