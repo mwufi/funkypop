@@ -12,6 +12,19 @@ interface VideoPreviewProps {
   inputProps: any;
 }
 
+const AVAILABLE_CLIPS = [
+  {
+    name: 'forest.mp4',
+    url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/forest.mp4',
+    type: "video" as const
+  },
+  {
+    name: 'house.mp4',
+    url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/house.mp4',
+    type: "video" as const
+  }
+] as const;
+
 export const VideoPreview: React.FC<VideoPreviewProps> = ({
   durationInFrames,
   fps,
@@ -69,23 +82,22 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
   }, [fps]);
 
   const handleAddClip = useCallback(async () => {
-    // Create the house clip
+    const randomIndex = Math.floor(Math.random() * AVAILABLE_CLIPS.length);
+    const randomClip = AVAILABLE_CLIPS[randomIndex];
+    
     const newClip: Clip = {
-      id: Math.random().toString(),
-      name: 'house.mp4',
-      url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/house.mp4',
-      type: 'video',
+      id: crypto.randomUUID(),
+      ...randomClip,
+      start: timeline.clips.reduce((max, clip) => Math.max(max, clip.start + clip.duration), 0),
       sourceStart: 0,
       sourceEnd: 150,
-      start: timeline.clips.reduce((sum, clip) => Math.max(sum, clip.start + clip.duration), 0),
       duration: 150
     };
 
-    // Add it to the timeline
-    setTimeline(prev => ({
-      ...prev,
-      clips: [...prev.clips, newClip]
-    }));
+    setTimeline({
+      ...timeline,
+      clips: [...timeline.clips, newClip]
+    });
   }, [timeline.clips]);
 
   return (
@@ -98,8 +110,11 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
               <Player
                 ref={playerRef}
                 component={component}
-                durationInFrames={timeline.clips.reduce((max, clip) => 
-                  Math.max(max, clip.start + clip.duration), 0)}
+                durationInFrames={Math.max(
+                  150, // Minimum 5 seconds at 30fps
+                  timeline.clips.reduce((max, clip) => 
+                    Math.max(max, clip.start + clip.duration), 0)
+                )}
                 fps={fps}
                 compositionWidth={1080}
                 compositionHeight={1920}
@@ -130,6 +145,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
           currentFrame={currentFrame}
           onTimelineUpdate={setTimeline}
           onAddClip={handleAddClip}
+          fps={fps}
         />
       </div>
     </div>

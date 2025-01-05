@@ -124,7 +124,7 @@ const Home: NextPage = () => {
   const subtitleTimeMax = subtitles.phrases.reduce((max, phrase) => Math.max(max, phrase.endFrame), 0) || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <main className="min-h-screen overflow-hidden">
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 bg-gray-50 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -223,7 +223,7 @@ const Home: NextPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
