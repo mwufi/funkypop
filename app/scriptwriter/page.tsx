@@ -3,29 +3,18 @@
 import { Player } from '@remotion/player';
 import { useEffect, useState } from 'react';
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig, staticFile } from 'remotion';
-
-type MessageType = 'blueMessage' | 'grayMessage';
-
-interface MessageData {
-    type: MessageType;
-    text: string;
-    showTime?: boolean;
-    delay?: number;  // Custom delay before showing message. If > 30, shows typing indicator
-}
-
-// Standard delay between messages
-const STANDARD_DELAY = 30;
+import { TIMING, TimingUtils, type MessageData, type MessageWithTiming } from './utils';
 
 const MESSAGES: MessageData[] = [
-    { type: 'grayMessage', text: "Hey, did you hear about the new quantum computing breakthrough? 🖥️", showTime: true },
-    { type: 'blueMessage', text: "Oh yeah! The 1000-qubit processor, right? Groundbreaking stuff!" },
-    { type: 'grayMessage', text: "Exactly! It's going to revolutionize cryptography as we know it." },
-    { type: 'blueMessage', text: "Totally! But have you considered the implications for current encryption methods?" },
-    { type: 'grayMessage', text: "Absolutely. RSA might become obsolete overnight!" },
-    { type: 'grayMessage', text: "We'll need to pivot to quantum-resistant algorithms ASAP." },
-    { type: 'blueMessage', text: "True. What's your take on lattice-based cryptography as an alternative?" },
-    { type: 'grayMessage', text: "It's promising, but I'm more intrigued by multivariate cryptography 🤓" },
-    { type: 'grayMessage', text: "The computational overhead is a concern though. We'll need to optimize." },
+    { type: 'grayMessage', text: "Hey, have you heard about that awesome new startup, Codeium? 🚀", showTime: true },
+    { type: 'blueMessage', text: "Oh yeah! The AI-powered coding assistant, right? It's amazing!" },
+    { type: 'grayMessage', text: "Exactly! It's revolutionizing how developers write code." },
+    { type: 'blueMessage', text: "Totally! I've been using it and it's increased my productivity so much." },
+    { type: 'grayMessage', text: "Same here! The code completions are incredibly accurate." },
+    { type: 'grayMessage', text: "And it works with so many languages and frameworks out of the box." },
+    { type: 'blueMessage', text: "True. What's your favorite feature? I love the instant documentation." },
+    { type: 'grayMessage', text: "For me, it's the AI-powered code explanations. So helpful! 🤓" },
+    { type: 'grayMessage', text: "Plus, their free tier is super generous. It's a game-changer for devs." },
 ];
 
 const BASE_SIZE = '2.8rem';
@@ -81,12 +70,7 @@ const DELIVERED_STYLE = {
     marginTop: '0.4rem',
 };
 
-interface MessageProps {
-    text: string;
-    delay: number;
-    type: MessageType;
-    customDelay: number;
-    showTime?: boolean;
+interface MessageProps extends MessageWithTiming {
     isPartOfGroup?: boolean;
     showDelivered?: boolean;
 }
@@ -96,6 +80,7 @@ const Message: React.FC<MessageProps> = ({
     delay,
     type,
     customDelay,
+    readingTime,
     showTime = false,
     isPartOfGroup = false,
     showDelivered = false,
@@ -103,7 +88,8 @@ const Message: React.FC<MessageProps> = ({
     const frame = useCurrentFrame();
     const { fps } = useVideoConfig();
 
-    const showTyping = customDelay > STANDARD_DELAY;
+    // Only show typing for gray messages with long delays
+    const showTyping = type === 'grayMessage' && customDelay > TIMING.TYPING_THRESHOLD;
     const messageDelay = delay + customDelay;
     const scale = spring({
         frame: frame - messageDelay,
@@ -177,16 +163,11 @@ const Message: React.FC<MessageProps> = ({
 };
 
 const MyComposition = ({ bgImage = false }) => {
-    // Calculate sequential delays
-    const messagesWithDelays = MESSAGES.reduce((acc: (MessageData & {
-        delay: number,
-        customDelay: number
-    })[], msg, i) => {
-        const prevItem = acc[acc.length - 1];
-        const delay = i === 0 ? 0 : prevItem.delay + prevItem.customDelay;
-        const customDelay = msg.delay || STANDARD_DELAY;
-
-        return [...acc, { ...msg, delay, customDelay }];
+    // Calculate all message timings
+    const messagesWithDelays = MESSAGES.reduce<MessageWithTiming[]>((acc, msg, i) => {
+        const prevMessage = acc[i - 1];
+        const messageWithTiming = TimingUtils.calculateMessageTiming(msg, i, prevMessage);
+        return [...acc, messageWithTiming];
     }, []);
 
     // Group messages by type
@@ -239,6 +220,7 @@ const MyComposition = ({ bgImage = false }) => {
                                 delay={msg.delay}
                                 type={msg.type}
                                 customDelay={msg.customDelay}
+                                readingTime={msg.readingTime}
                                 showTime={msg.showTime}
                                 isPartOfGroup={msg.isPartOfGroup}
                                 showDelivered={msg.index === lastBlueMessageIndex}
