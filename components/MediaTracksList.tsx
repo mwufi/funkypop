@@ -1,21 +1,78 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 
 interface MediaTrack {
     id: string;
     name: string;
     url: string;
     type: 'video' | 'image';
+    startFrame: number;
+    endFrame: number;
+    isPrimary: boolean;
 }
 
 interface MediaTracksListProps {
     tracks: MediaTrack[];
     onAddTrack: () => void;
+    onTrackUpdate: (updatedTrack: MediaTrack) => void;
+    onPrimaryChange: (trackId: string) => void;
+    currentFrame: number;
 }
 
 export const MediaTracksList: React.FC<MediaTracksListProps> = ({
     tracks,
-    onAddTrack
+    onAddTrack,
+    onTrackUpdate,
+    onPrimaryChange,
+    currentFrame
 }) => {
+    const [draggingType, setDraggingType] = useState<'start' | 'end' | 'move' | null>(null);
+    const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
+    const trackContainerRef = useRef<HTMLDivElement>(null);
+
+    const handleMouseDown = (
+        e: React.MouseEvent,
+        trackId: string,
+        type: 'start' | 'end' | 'move'
+    ) => {
+        setDraggingType(type);
+        setActiveTrackId(trackId);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!draggingType || !activeTrackId || !trackContainerRef.current) return;
+
+        const track = tracks.find(t => t.id === activeTrackId);
+        if (!track) return;
+
+        const rect = trackContainerRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const framePosition = Math.round((x / rect.width) * 300); // Using 300 frames as default
+        
+        const updatedTrack = { ...track };
+        
+        switch (draggingType) {
+            case 'start':
+                updatedTrack.startFrame = Math.max(0, Math.min(framePosition, track.endFrame - 1));
+                break;
+            case 'end':
+                updatedTrack.endFrame = Math.max(track.startFrame + 1, Math.min(framePosition, 300));
+                break;
+            case 'move':
+                const duration = track.endFrame - track.startFrame;
+                const newStart = Math.max(0, Math.min(framePosition, 300 - duration));
+                updatedTrack.startFrame = newStart;
+                updatedTrack.endFrame = newStart + duration;
+                break;
+        }
+
+        onTrackUpdate(updatedTrack);
+    };
+
+    const handleMouseUp = () => {
+        setDraggingType(null);
+        setActiveTrackId(null);
+    };
+
     return (
         <div className="space-y-3">
             {/* Track List */}
@@ -42,23 +99,61 @@ export const MediaTracksList: React.FC<MediaTracksListProps> = ({
                             )}
                         </div>
 
-                        {/* Track Name */}
-                        <span className="text-[#657b83] group-hover:text-[#fdf6e3] font-medium">
-                            {track.name}
-                        </span>
-
-                        {/* Actions */}
-                        <div className="ml-auto flex gap-2">
-                            <button
-                                className="text-[#657b83] hover:text-[#dc322f] p-1 rounded"
-                                title="Remove track"
+                        {/* Track Name and Timeline */}
+                        <div className="flex-grow">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[#657b83] group-hover:text-[#fdf6e3] font-medium">
+                                    {track.name}
+                                </span>
+                                <button
+                                    className={`px-2 py-1 text-xs rounded ${
+                                        track.isPrimary
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-[#93a1a1] text-[#fdf6e3] hover:bg-[#657b83]'
+                                    }`}
+                                    onClick={() => onPrimaryChange(track.id)}
+                                >
+                                    Primary
+                                </button>
+                            </div>
+                            
+                            {/* Timeline */}
+                            <div
+                                ref={trackContainerRef}
+                                className="relative h-2 bg-[#93a1a1] rounded-full overflow-hidden cursor-pointer"
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={handleMouseUp}
+                                onMouseLeave={handleMouseUp}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M3 6h18"></path>
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                </svg>
-                            </button>
+                                {/* Active Segment */}
+                                <div
+                                    className="absolute h-full bg-green-500/50 hover:bg-green-500/70 transition-colors"
+                                    style={{
+                                        left: `${(track.startFrame / 300) * 100}%`,
+                                        width: `${((track.endFrame - track.startFrame) / 300) * 100}%`,
+                                    }}
+                                    onMouseDown={(e) => handleMouseDown(e, track.id, 'move')}
+                                >
+                                    {/* Drag Handles */}
+                                    <div
+                                        className="absolute left-0 w-1 h-full bg-green-600 cursor-ew-resize hover:bg-green-700"
+                                        onMouseDown={(e) => handleMouseDown(e, track.id, 'start')}
+                                    />
+                                    <div
+                                        className="absolute right-0 w-1 h-full bg-green-600 cursor-ew-resize hover:bg-green-700"
+                                        onMouseDown={(e) => handleMouseDown(e, track.id, 'end')}
+                                    />
+                                </div>
+
+                                {/* Playhead */}
+                                <div
+                                    className="absolute top-0 h-full w-0.5 bg-white shadow-sm pointer-events-none"
+                                    style={{
+                                        left: `${(currentFrame / 300) * 100}%`,
+                                        transform: 'translateX(-50%)',
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -67,13 +162,10 @@ export const MediaTracksList: React.FC<MediaTracksListProps> = ({
             {/* Add Track Button */}
             <button
                 onClick={onAddTrack}
-                className="w-full py-2 px-4 rounded-lg border-2 border-dashed border-[#93a1a1] text-[#93a1a1] hover:border-[#268bd2] hover:text-[#268bd2] transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2 px-4 bg-[#eee8d5] hover:bg-[#93a1a1] text-[#657b83] hover:text-[#fdf6e3] rounded-lg transition-colors"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 5v14M5 12h14" />
-                </svg>
                 Add Media Track
             </button>
         </div>
     );
-}; 
+};

@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Player } from "@remotion/player";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { Player, PlayerRef } from "@remotion/player";
 import { z } from "zod";
 import { CompositionProps } from "@/types/constants";
 import { MediaTracksList } from './MediaTracksList';
@@ -41,10 +41,40 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
         }
     ]);
 
-    const handleAddTrack = () => {
+    const [currentFrame, setCurrentFrame] = useState(0);
+    const playerRef = useRef<PlayerRef>(null);
+
+    // Update current frame
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (playerRef.current) {
+                setCurrentFrame(playerRef.current.getCurrentFrame());
+            }
+        }, 1000 / fps); // Update at the video's frame rate
+
+        return () => clearInterval(interval);
+    }, [fps]);
+
+    const handleAddTrack = useCallback(() => {
         // TODO: Implement file selection
         console.log('Add track clicked');
-    };
+    }, []);
+
+    const handleTrackUpdate = useCallback((updatedTrack: any) => {
+        const newTracks = tracks.map(track => 
+            track.id === updatedTrack.id ? updatedTrack : track
+        );
+        setTracks(newTracks);
+    }, [tracks]);
+
+    const handlePrimaryChange = useCallback((trackId: string) => {
+        setTracks(tracks => 
+            tracks.map(track => ({
+                ...track,
+                isPrimary: track.id === trackId
+            }))
+        );
+    }, []);
 
     // Combine the background video URL with other input props
     const combinedInputProps = useMemo(() => ({
@@ -78,6 +108,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
                                         "aspect-[4/5]"}
                         `}>
                             <Player
+                                ref={playerRef}
                                 component={component}
                                 inputProps={combinedInputProps}
                                 durationInFrames={durationInFrames}
@@ -104,6 +135,9 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
                 <MediaTracksList
                     tracks={tracks}
                     onAddTrack={handleAddTrack}
+                    onTrackUpdate={handleTrackUpdate}
+                    onPrimaryChange={handlePrimaryChange}
+                    currentFrame={currentFrame}
                 />
             </div>
 

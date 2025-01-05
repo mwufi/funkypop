@@ -13,33 +13,53 @@ import {
   VIDEO_WIDTH,
 } from "@/types/constants";
 import { z } from "zod";
+import { SubtitleStyle } from "@/types/subtitles";
 import { RenderControls } from "@/components/RenderControls";
 import { Tips } from "@/components/Tips";
 import { Spacing } from "@/components/Spacing";
 import { AuthButton } from "@/components/AuthButton";
 import { StyleSelector } from "@/components/StyleSelector";
 import { VideoPreview } from "@/components/VideoPreview";
-import { SubtitleStyle } from "@/types/subtitles";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import MediaTrackEditor from '@/components/MediaTrackEditor';
+import { MediaTrack } from '@/types/media';
 
 const Home: NextPage = () => {
   const [text, setText] = useState<string>(defaultMyCompProps.title);
-  const [subtitles, setSubtitles] = useState(defaultMyCompProps.subtitles);
+  const [subtitles, setSubtitles] = useState({ phrases: [], fontSize: 70 });
   const [selectedStyle, setSelectedStyle] = useState<SubtitleStyle>("tiktok-black");
   const [subtitleText, setSubtitleText] = useState<string>("");
   const [fontSize, setFontSize] = useState<number>(70);
+  const [mediaTracks, setMediaTracks] = useState<MediaTrack[]>([
+    {
+      id: '1',
+      url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/forest.mp4',
+      name: 'Forest',
+      startFrame: 0,
+      endFrame: 90,
+      isPrimary: true
+    },
+    {
+      id: '2',
+      url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/house.mp4',
+      name: 'House',
+      startFrame: 91,
+      endFrame: 180
+    }
+  ]);
 
-  const inputProps: z.infer<typeof CompositionProps> = useMemo(() => {
+  const inputProps = useMemo(() => {
     return {
       title: text,
       subtitles,
+      mediaTracks,
     };
-  }, [text, subtitles]);
+  }, [text, subtitles, mediaTracks]);
 
   const handleSubtitleInput = useCallback((value: string) => {
     setSubtitleText(value);
@@ -68,11 +88,26 @@ const Home: NextPage = () => {
     setSubtitles({ phrases, fontSize });
   }, [selectedStyle, fontSize]);
 
+  const handleTrackUpdate = (updatedTrack: MediaTrack) => {
+    setMediaTracks(tracks =>
+      tracks.map(track => (track.id === updatedTrack.id ? updatedTrack : track))
+    );
+  };
+
+  const handlePrimaryChange = (trackId: string) => {
+    setMediaTracks(tracks =>
+      tracks.map(track => ({
+        ...track,
+        isPrimary: track.id === trackId
+      }))
+    );
+  };
+
   // Update subtitles when style or font size changes
   useEffect(() => {
     if (subtitleText) {
       handleSubtitleInput(subtitleText);
-    } else if (subtitles?.phrases.length > 0) {
+    } else if (subtitles.phrases.length > 0) {
       // If there's no subtitle text but there are existing phrases,
       // update all phrases with the new style
       setSubtitles(prev => ({
@@ -86,7 +121,7 @@ const Home: NextPage = () => {
     }
   }, [selectedStyle, fontSize, handleSubtitleInput, subtitleText]);
 
-  const subtitleTimeMax = subtitles?.phrases.reduce((max, phrase) => Math.max(max, phrase.endFrame), 0) || 0;
+  const subtitleTimeMax = subtitles.phrases.reduce((max, phrase) => Math.max(max, phrase.endFrame), 0) || 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,14 +141,26 @@ const Home: NextPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-6rem)]">
             {/* Video Preview */}
             <div className="lg:col-span-8 h-full">
-              <VideoPreview
-                component={Main}
-                inputProps={inputProps}
-                durationInFrames={Math.max(150, subtitleTimeMax)}
-                fps={VIDEO_FPS}
-                height={VIDEO_HEIGHT}
-                width={VIDEO_WIDTH}
-              />
+              <div className="space-y-4">
+                <VideoPreview
+                  component={Main}
+                  inputProps={inputProps}
+                  durationInFrames={Math.max(150, subtitleTimeMax)}
+                  fps={VIDEO_FPS}
+                  height={VIDEO_HEIGHT}
+                  width={VIDEO_WIDTH}
+                />
+                {/* Media Tracks Editor */}
+                <div className="bg-white rounded-lg shadow p-4">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Media Tracks</h2>
+                  <MediaTrackEditor
+                    tracks={mediaTracks}
+                    totalFrames={300}
+                    onTrackUpdate={handleTrackUpdate}
+                    onPrimaryChange={handlePrimaryChange}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Controls */}
