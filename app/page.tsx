@@ -144,9 +144,9 @@ const Home: NextPage = () => {
               <div className="space-y-4">
                 <VideoPreview
                   component={Main}
+                  durationInFrames={600} // This will be overridden by the actual video duration
+                  fps={30}
                   inputProps={inputProps}
-                  durationInFrames={Math.max(150, subtitleTimeMax)}
-                  fps={VIDEO_FPS}
                   height={VIDEO_HEIGHT}
                   width={VIDEO_WIDTH}
                 />

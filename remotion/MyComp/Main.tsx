@@ -1,9 +1,8 @@
-import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, Video } from 'remotion';
+import { AbsoluteFill, Sequence, Video } from 'remotion';
 import { CompositionProps } from "@/types/constants";
 import React from "react";
 import { SubtitleRenderer } from "./subtitles/SubtitleRenderer";
-import { SubtitleData } from "@/types/subtitles";
-import { MediaTrack } from '@/types/media';
+import { Timeline } from '@/types/media';
 import { z } from "zod";
 
 // Sample subtitle data
@@ -34,20 +33,35 @@ const sampleSubtitles: SubtitleData = [
   },
 ];
 
-export const Main = ({ title, subtitles = sampleSubtitles, mediaTracks }: z.infer<typeof CompositionProps> & { mediaTracks: MediaTrack[] }) => {
-  const frame = useCurrentFrame();
-
-  // Find the active track for the current frame
-  const activeTrack = mediaTracks?.find(
-    track => frame >= track.startFrame && frame <= track.endFrame
-  ) || mediaTracks?.find(track => track.isPrimary);
-
+export const Main = ({ title, subtitles = sampleSubtitles, timeline }: z.infer<typeof CompositionProps> & { timeline: Timeline }) => {
   return (
     <AbsoluteFill className="bg-gray-900">
-      {activeTrack && (
-        <Video src={activeTrack.url} className="absolute inset-0 w-full h-full object-cover" />
-      )}
-      {subtitles.phrases.map((phrase, index) => (
+      {/* Render clips in sequence */}
+      {timeline.clips.map((clip) => (
+        <Sequence
+          key={clip.id}
+          from={clip.start}
+          durationInFrames={clip.duration}
+        >
+          {clip.type === 'video' ? (
+            <Video
+              src={clip.url}
+              startFrom={clip.sourceStart}
+              endAt={clip.sourceEnd}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              src={clip.url}
+              className="absolute inset-0 w-full h-full object-cover"
+              alt={clip.name}
+            />
+          )}
+        </Sequence>
+      ))}
+
+      {/* Subtitles */}
+      {subtitles?.phrases?.map((phrase, index) => (
         <SubtitleRenderer key={index} phrase={phrase} />
       ))}
     </AbsoluteFill>

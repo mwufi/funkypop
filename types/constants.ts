@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { SubtitleData } from "./subtitles";
+import { MediaTracks } from "./media";
 
 export const COMP_NAME = "MyComp";
 
 export const CompositionProps = z.object({
   title: z.string(),
-  subtitles: z.custom<SubtitleData>().optional(),
+  subtitles: z.custom<SubtitleData>(),
+  tracks: z.custom<MediaTracks>(),
 });
 
 export const defaultMyCompProps: z.infer<typeof CompositionProps> = {
@@ -38,6 +40,7 @@ export const defaultMyCompProps: z.infer<typeof CompositionProps> = {
       },
     ],
   },
+  tracks: {}, // added empty tracks object to match new CompositionProps type
 };
 
 export const VIDEO_WIDTH = 1920;
