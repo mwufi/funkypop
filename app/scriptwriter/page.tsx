@@ -3,17 +3,14 @@
 import { Player } from '@remotion/player';
 import { useEffect, useState } from 'react';
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig, staticFile } from 'remotion';
-import { TIMING, TimingUtils, type MessageData, type MessageWithTiming } from './utils';
+import { TimingUtils, type MessageData, type MessageWithTiming } from './utils';
 
 const MESSAGES: MessageData[] = [
     { type: 'grayMessage', text: "Hey, have you heard about that awesome new startup, Codeium? 🚀", showTime: true },
     { type: 'blueMessage', text: "Oh yeah! The AI-powered coding assistant, right? It's amazing!" },
     { type: 'grayMessage', text: "Exactly! It's revolutionizing how developers write code." },
     { type: 'blueMessage', text: "Totally! I've been using it and it's increased my productivity so much." },
-    { type: 'grayMessage', text: "Same here! The code completions are incredibly accurate." },
-    { type: 'grayMessage', text: "And it works with so many languages and frameworks out of the box." },
-    { type: 'blueMessage', text: "True. What's your favorite feature? I love the instant documentation." },
-    { type: 'grayMessage', text: "For me, it's the AI-powered code explanations. So helpful! 🤓" },
+    { type: 'blueMessage', text: "For me, it's the AI-powered code explanations. So helpful! 🤓" },
     { type: 'grayMessage', text: "Plus, their free tier is super generous. It's a game-changer for devs." },
 ];
 
@@ -73,6 +70,7 @@ const DELIVERED_STYLE = {
 interface MessageProps extends MessageWithTiming {
     isPartOfGroup?: boolean;
     showDelivered?: boolean;
+    timingUtils: TimingUtils;
 }
 
 const Message: React.FC<MessageProps> = ({
@@ -84,12 +82,13 @@ const Message: React.FC<MessageProps> = ({
     showTime = false,
     isPartOfGroup = false,
     showDelivered = false,
+    timingUtils,
 }) => {
     const frame = useCurrentFrame();
     const { fps } = useVideoConfig();
 
     // Only show typing for gray messages with long delays
-    const showTyping = type === 'grayMessage' && customDelay > TIMING.TYPING_THRESHOLD;
+    const showTyping = type === 'grayMessage' && customDelay > timingUtils.TIMING.TYPING_THRESHOLD;
     const messageDelay = delay + customDelay;
     const scale = spring({
         frame: frame - messageDelay,
@@ -162,11 +161,13 @@ const Message: React.FC<MessageProps> = ({
     );
 };
 
-const MyComposition = ({ bgImage = false }) => {
+const MyComposition = ({ bgImage = false, speedMultiplier = 1 }) => {
+    const timingUtils = new TimingUtils(speedMultiplier);
+    
     // Calculate all message timings
     const messagesWithDelays = MESSAGES.reduce<MessageWithTiming[]>((acc, msg, i) => {
         const prevMessage = acc[i - 1];
-        const messageWithTiming = TimingUtils.calculateMessageTiming(msg, i, prevMessage);
+        const messageWithTiming = timingUtils.calculateMessageTiming(msg, i, prevMessage);
         return [...acc, messageWithTiming];
     }, []);
 
@@ -224,6 +225,7 @@ const MyComposition = ({ bgImage = false }) => {
                                 showTime={msg.showTime}
                                 isPartOfGroup={msg.isPartOfGroup}
                                 showDelivered={msg.index === lastBlueMessageIndex}
+                                timingUtils={timingUtils}
                             />
                         ))}
                     </div>
@@ -234,17 +236,8 @@ const MyComposition = ({ bgImage = false }) => {
 };
 
 export default function ScriptWriter() {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    if (!mounted) return null;
-
-    const tiktokWidth = 360;
-    const tiktokHeight = (tiktokWidth * 16) / 9;
-
+    const [speed, setSpeed] = useState(1);
+    
     return (
         <div style={{
             width: '100%',
@@ -255,15 +248,40 @@ export default function ScriptWriter() {
             justifyContent: 'center',
         }}>
             <div style={{
-                width: tiktokWidth,
-                height: tiktokHeight,
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                borderRadius: '8px',
+                width: '100%',
+                maxWidth: '400px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+            }}>
+                <label style={{ fontSize: '14px' }} htmlFor="speed">Speed:</label>
+                <input
+                    id="speed"
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.1"
+                    value={speed}
+                    onChange={(e) => setSpeed(Number(e.target.value))}
+                    style={{
+                        width: '100%',
+                    }}
+                />
+                <span style={{ fontSize: '14px' }}>{speed}x</span>
+            </div>
+            
+            <div style={{
+                width: '100%',
+                maxWidth: '400px',
+                aspectRatio: '9/16',
+                backgroundColor: 'black',
+                borderRadius: '20px',
                 overflow: 'hidden',
             }}>
                 <Player
                     component={MyComposition}
-                    durationInFrames={360}  // Increased for longer reading times
+                    durationInFrames={360}
                     fps={30}
                     compositionWidth={1080}
                     compositionHeight={1920}
@@ -272,6 +290,9 @@ export default function ScriptWriter() {
                         height: '100%',
                     }}
                     controls
+                    inputProps={{
+                        speedMultiplier: speed
+                    }}
                 />
             </div>
         </div>

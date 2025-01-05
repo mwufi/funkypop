@@ -1,11 +1,20 @@
-// Timing constants (in frames)
-export const TIMING = {
-    MIN_DELAY: 30,           // Minimum delay between messages
-    READING_BUFFER: 5,      // Extra frames to add to reading time
-    TYPING_THRESHOLD: 45,     // Show typing indicator if delay > this
-    CHARS_PER_SECOND: 60,     // Reading speed (characters per second)
-    FPS: 30,                  // Frames per second
+// Base timing constants (in frames)
+const BASE_TIMING = {
+    MIN_DELAY: 25,           // Minimum delay between messages (~0.83s)
+    READING_BUFFER: 5,       // Extra frames to add to reading time (~0.17s)
+    TYPING_THRESHOLD: 40,    // Show typing indicator if delay > this (~1.33s)
+    CHARS_PER_SECOND: 75,    // Reading speed (characters per second)
+    FPS: 30,                 // Frames per second
 } as const;
+
+// Get adjusted timing based on speed multiplier (0.5 = slower, 2 = faster)
+export const getAdjustedTiming = (speedMultiplier: number = 1) => ({
+    ...BASE_TIMING,
+    MIN_DELAY: Math.round(BASE_TIMING.MIN_DELAY / speedMultiplier),
+    READING_BUFFER: Math.round(BASE_TIMING.READING_BUFFER / speedMultiplier),
+    TYPING_THRESHOLD: Math.round(BASE_TIMING.TYPING_THRESHOLD / speedMultiplier),
+    CHARS_PER_SECOND: Math.round(BASE_TIMING.CHARS_PER_SECOND * speedMultiplier),
+});
 
 // Message types and interfaces
 export type MessageType = 'blueMessage' | 'grayMessage';
@@ -26,24 +35,24 @@ export interface MessageWithTiming extends MessageData {
 /**
  * Utility functions for calculating message timing and animations
  */
-export const TimingUtils = {
+export class TimingUtils {
+    private timing: typeof BASE_TIMING;
+
+    constructor(speedMultiplier: number = 1) {
+        this.timing = getAdjustedTiming(speedMultiplier);
+    }
+
     /**
      * Calculate time needed to read a message
-     * @param text Message text
-     * @returns Number of frames needed to read
      */
     calculateReadingTime(text: string): number {
         const charCount = text.length;
-        const readingSeconds = charCount / TIMING.CHARS_PER_SECOND;
-        return Math.ceil(readingSeconds * TIMING.FPS);
-    },
+        const readingSeconds = charCount / this.timing.CHARS_PER_SECOND;
+        return Math.ceil(readingSeconds * this.timing.FPS);
+    }
 
     /**
      * Calculate delay for a message based on its position and content
-     * @param message Current message
-     * @param index Position in conversation
-     * @param prevMessage Previous message (if any)
-     * @returns Timing information for the message
      */
     calculateMessageTiming(
         message: MessageData,
@@ -65,11 +74,9 @@ export const TimingUtils = {
         // For subsequent messages, use max(readingTime + buffer, MIN_DELAY)
         const baseDelay = prevMessage!.delay + prevMessage!.customDelay;
         const customDelay = message.delay || Math.max(
-            readingTime + TIMING.READING_BUFFER,
-            TIMING.MIN_DELAY
+            readingTime + this.timing.READING_BUFFER,
+            this.timing.MIN_DELAY
         );
-        console.log('baseDelay', baseDelay);
-        console.log('customDelay', customDelay);
 
         return {
             ...message,
@@ -78,4 +85,9 @@ export const TimingUtils = {
             readingTime,
         };
     }
-};
+
+    // Getter for timing constants
+    get TIMING() {
+        return this.timing;
+    }
+}
