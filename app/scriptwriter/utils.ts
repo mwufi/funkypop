@@ -30,64 +30,37 @@ export interface MessageWithTiming extends MessageData {
     delay: number;      // Calculated total delay before this message
     customDelay: number; // Time to wait after previous message
     readingTime: number; // Time needed to read this message
+    messageDelay: number;
+    index: number;
 }
 
 /**
  * Utility functions for calculating message timing and animations
  */
 export class TimingUtils {
-    private timing: typeof BASE_TIMING;
+    private MIN_DELAY = 25;
+    private READING_BUFFER = 5;
+    private TYPING_THRESHOLD = 40;
+    private CHARS_PER_SECOND = 75;
 
-    constructor(speedMultiplier: number = 1) {
-        this.timing = getAdjustedTiming(speedMultiplier);
-    }
+    constructor(private speedMultiplier: number = 1) {}
 
-    /**
-     * Calculate time needed to read a message
-     */
-    calculateReadingTime(text: string): number {
-        const charCount = text.length;
-        const readingSeconds = charCount / this.timing.CHARS_PER_SECOND;
-        return Math.ceil(readingSeconds * this.timing.FPS);
-    }
-
-    /**
-     * Calculate delay for a message based on its position and content
-     */
-    calculateMessageTiming(
-        message: MessageData,
-        index: number,
-        prevMessage?: MessageWithTiming
-    ): MessageWithTiming {
-        const readingTime = this.calculateReadingTime(message.text);
-        
-        // First message appears immediately
-        if (index === 0) {
-            return {
-                ...message,
-                delay: 0,
-                customDelay: 0,
-                readingTime,
-            };
-        }
-
-        // For subsequent messages, use max(readingTime + buffer, MIN_DELAY)
-        const baseDelay = prevMessage!.delay + prevMessage!.customDelay;
-        const customDelay = message.delay || Math.max(
-            readingTime + this.timing.READING_BUFFER,
-            this.timing.MIN_DELAY
+    calculateMessageTiming(message: MessageData, index: number, prevMessage?: MessageWithTiming): MessageWithTiming {
+        const baseDelay = prevMessage?.messageDelay || 0;
+        const customDelay = message.delay || this.MIN_DELAY;
+        const readingTime = Math.max(
+            (message.text.length / this.CHARS_PER_SECOND) * 30,
+            this.READING_BUFFER
         );
+
+        const messageDelay = baseDelay + customDelay;
 
         return {
             ...message,
-            delay: baseDelay,
-            customDelay,
-            readingTime,
+            delay: customDelay,
+            messageDelay,
+            index,
+            readingTime
         };
-    }
-
-    // Getter for timing constants
-    get TIMING() {
-        return this.timing;
     }
 }
