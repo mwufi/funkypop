@@ -36,4 +36,4 @@ const TypingIndicator = () => {
     );
 };
 
-export default TypingIndicator;
+export { TypingIndicator };
