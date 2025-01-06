@@ -37,6 +37,3 @@ next-env.d.ts
 out/
 .env
 build
-
-# data directories
-videos/

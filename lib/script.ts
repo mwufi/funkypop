@@ -2,7 +2,7 @@
 import { mkdir, access, writeFile } from "node:fs/promises";
 
 const baseUrl = "https://reelfarm-ugc.s3.us-west-1.amazonaws.com";
-const videoDir = "./videos";
+const videoDir = "./data/videos";
 
 async function checkAndCreateDir(dir) {
   try {
