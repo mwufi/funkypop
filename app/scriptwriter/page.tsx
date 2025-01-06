@@ -6,6 +6,8 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
 import { TimingUtils } from './utils';
 import { Message, MessageData, MessageWithTiming } from './Message';
 
+// notice that the earlier ones are quick, and the later ones have a delay
+// this is bc in the beginning of a video, we want to hook the viewer
 const MESSAGES: MessageData[] = [
     { type: 'grayMessage', text: "yo fam, u hear bout that lit af party this weekend? 🔥🎉", showTime: true },
     { type: 'blueMessage', text: "omg yesss! the one w/ the sick beats and laser show, rite?" },
