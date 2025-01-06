@@ -56,6 +56,7 @@ const MyComposition = ({ bgImage = false, speedMultiplier = 1, scrollSpeed = 0.5
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
+                justifyContent: 'center',
                 padding: '1rem',
                 gap: '0.5rem',
                 overflowY: 'hidden',
@@ -85,7 +86,7 @@ const MyComposition = ({ bgImage = false, speedMultiplier = 1, scrollSpeed = 0.5
 
 export default function ScriptWriter() {
     const [speed, setSpeed] = useState(1);
-    const [scrollSpeed, setScrollSpeed] = useState(0.5);
+    const [scrollSpeed, setScrollSpeed] = useState(0.0);
 
     return (
         <div style={{

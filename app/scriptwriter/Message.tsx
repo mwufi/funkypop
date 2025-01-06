@@ -72,7 +72,8 @@ export const Message = ({
             </div>
             {showDelivered && (
                 <div style={{
-                    fontSize: '1.4rem',
+                    fontSize: '1.6rem',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
                     color: '#86868B',
                     textAlign: 'right' as const,
                     marginRight: '7%',
