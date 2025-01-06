@@ -4,6 +4,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Player, PlayerRef } from "@remotion/player";
 import { Timeline, Clip } from '@/types/media';
 import TimelineEditor from './TimelineEditor';
+import { AvatarGrid } from './AvatarGrid';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface VideoPreviewProps {
   durationInFrames: number;
@@ -31,15 +38,15 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
   component,
   inputProps,
 }) => {
-  // Initialize with forest.mp4
+  const [selectedAvatar, setSelectedAvatar] = useState<number | null>(1);
   const [timeline, setTimeline] = useState<Timeline>({
     clips: [{
       id: '1',
-      name: 'forest.mp4',
-      url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/forest.mp4?t=2025-01-04T22%3A36%3A21.098Z',
+      name: 'video_1.mp4',
+      url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/videos/video_1.mp4',
       type: 'video',
       sourceStart: 0,
-      sourceEnd: 150, // Will be updated when video loads
+      sourceEnd: 150,
       start: 0,
       duration: 150
     }]
@@ -47,6 +54,39 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
 
   const [currentFrame, setCurrentFrame] = useState(0);
   const playerRef = useRef<PlayerRef>(null);
+
+  const handleAddClip = async () => {
+    setTimeline(prev => ({
+      clips: [
+        ...prev.clips,
+        {
+          id: String(prev.clips.length + 1),
+          name: 'forest.mp4',
+          url: 'https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/forest.mp4',
+          type: 'video',
+          sourceStart: 0,
+          sourceEnd: 150,
+          start: prev.clips.reduce((max, clip) => Math.max(max, clip.start + clip.duration), 0),
+          duration: 150
+        }
+      ]
+    }));
+  };
+
+  const handleTimelineUpdate = (newTimeline: Timeline) => {
+    setTimeline(newTimeline);
+  };
+
+  const handleAvatarSelect = (avatarNumber: number) => {
+    setSelectedAvatar(avatarNumber);
+    setTimeline(prev => ({
+      clips: [{
+        ...prev.clips[0],
+        name: `video_${avatarNumber}.mp4`,
+        url: `https://ynxmunrlesicnfibjctb.supabase.co/storage/v1/object/public/project-images/funkypop-public/videos/video_${avatarNumber}.mp4`,
+      }]
+    }));
+  };
 
   // Detect video duration for first clip
   useEffect(() => {
@@ -81,72 +121,66 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
     return () => clearInterval(interval);
   }, [fps]);
 
-  const handleAddClip = useCallback(async () => {
-    const randomIndex = Math.floor(Math.random() * AVAILABLE_CLIPS.length);
-    const randomClip = AVAILABLE_CLIPS[randomIndex];
-    
-    const newClip: Clip = {
-      id: crypto.randomUUID(),
-      ...randomClip,
-      start: timeline.clips.reduce((max, clip) => Math.max(max, clip.start + clip.duration), 0),
-      sourceStart: 0,
-      sourceEnd: 150,
-      duration: 150
-    };
-
-    setTimeline({
-      ...timeline,
-      clips: [...timeline.clips, newClip]
-    });
-  }, [timeline.clips]);
-
   return (
     <div className="bg-[#fdf6e3] rounded-xl p-6 shadow-sm border border-[#eee8d5]">
-      {/* Video Container */}
-      <div className="relative rounded-lg overflow-hidden mb-4">
-        <div className="flex items-center justify-center bg-[#eee8d5] rounded-lg p-8">
-          <div className="relative w-[320px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)]">
-            <div className="w-full aspect-[9/16]">
-              <Player
-                ref={playerRef}
-                component={component}
-                durationInFrames={Math.max(
-                  150, // Minimum 5 seconds at 30fps
-                  timeline.clips.reduce((max, clip) => 
-                    Math.max(max, clip.start + clip.duration), 0)
-                )}
-                fps={fps}
-                compositionWidth={1080}
-                compositionHeight={1920}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: "0.5rem",
-                }}
-                controls
-                autoPlay
-                loop={true}
-                clickToPlay={false}
-                inputProps={{
-                  ...inputProps,
-                  timeline
-                }}
-              />
+      <div className="space-y-4">
+        <div className="relative rounded-lg overflow-hidden mb-4">
+          <div className="flex items-center justify-center bg-[#eee8d5] rounded-lg p-8">
+            <div className="relative w-[320px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)]">
+              <div className="w-full aspect-[9/16]">
+                <Player
+                  ref={playerRef}
+                  component={component}
+                  inputProps={{
+                    ...inputProps,
+                    timeline: timeline
+                  }}
+                  durationInFrames={Math.max(
+                    30, // Minimum 1 second at 30fps
+                    timeline.clips.length === 0 ? 30 : 
+                      timeline.clips.reduce((max, clip) => 
+                        Math.max(max, clip.start + clip.duration), 0)
+                  )}
+                  fps={fps}
+                  compositionWidth={1080}
+                  compositionHeight={1920}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "0.5rem",
+                  }}
+                  controls
+                  loop
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Timeline Editor */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Timeline</h2>
-        <TimelineEditor
-          timeline={timeline}
-          currentFrame={currentFrame}
-          onTimelineUpdate={setTimeline}
-          onAddClip={handleAddClip}
-          fps={fps}
-        />
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="timeline">
+            <AccordionTrigger>Timeline</AccordionTrigger>
+            <AccordionContent>
+              <TimelineEditor
+                timeline={timeline}
+                currentFrame={currentFrame}
+                onTimelineUpdate={handleTimelineUpdate}
+                onAddClip={handleAddClip}
+                fps={fps}
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="avatar-set">
+            <AccordionTrigger>Avatar Set</AccordionTrigger>
+            <AccordionContent>
+              <AvatarGrid
+                selectedAvatar={selectedAvatar}
+                onSelect={handleAvatarSelect}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </div>
   );
