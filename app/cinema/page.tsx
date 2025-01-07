@@ -1,98 +1,98 @@
 "use client";
 
-import { Player } from '@remotion/player';
-import { Cinema } from '@/remotion/MyComp/Cinema';
-import React, { useState, useEffect, useRef } from 'react';
-
-const ASPECT_RATIOS = {
-    'Cinematic (2.35:1)': 2.35,
-    'Widescreen (16:9)': 1.77,
-    'Standard (4:3)': 1.33,
-    'Square (1:1)': 1,
-    'Portrait (9:16)': 0.5625,
-    'TikTok (9:19.5)': 0.461,
-};
+import React, { useState } from 'react';
+import { VideoEditor } from '@/components/editor/VideoEditor';
+import { LayerPanel } from '@/components/editor/LayerPanel';
+import { Timeline } from '@/components/editor/Timeline';
+import { useVideoProject } from '@/hooks/useVideoProject';
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 export default function CinemaPage() {
-    const [aspectRatio, setAspectRatio] = useState<keyof typeof ASPECT_RATIOS>('Cinematic (2.35:1)');
-    const ratio = ASPECT_RATIOS[aspectRatio];
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [dimensions, setDimensions] = useState({ width: 1920, height: 817 });
-
-    useEffect(() => {
-        const updateDimensions = () => {
-            if (!containerRef.current) return;
-
-            const maxHeight = window.innerHeight * 0.65; // 75vh
-            const maxWidth = window.innerWidth * 0.95;  // 95vw
-
-            // Try setting by height first
-            let height = maxHeight;
-            let width = height * ratio;
-
-            // If width exceeds max width, set by width instead
-            if (width > maxWidth) {
-                width = maxWidth;
-                height = width / ratio;
-            }
-
-            setDimensions({
-                width: Math.round(width),
-                height: Math.round(height)
-            });
-        };
-
-        updateDimensions();
-        window.addEventListener('resize', updateDimensions);
-        return () => window.removeEventListener('resize', updateDimensions);
-    }, [ratio]);
+    const {
+        project,
+        updateProject,
+        selectedLayerId,
+        setSelectedLayerId,
+        addLayer,
+        removeLayer,
+        updateLayer,
+        addComponent,
+        removeComponent,
+        updateComponent
+    } = useVideoProject({
+        id: 'default',
+        name: 'Untitled Project',
+        dimensions: { width: 1920, height: 1080 },
+        fps: 30,
+        duration: 300, // 10 seconds at 30fps
+        layers: [],
+        currentTime: 0,
+    });
 
     return (
-        <div className="min-h-screen bg-gray-700 p-8 flex flex-col items-center gap-8">
-            {/* Controls */}
-            <div className="flex justify-center gap-4">
-                <select
-                    value={aspectRatio}
-                    onChange={(e) => setAspectRatio(e.target.value as keyof typeof ASPECT_RATIOS)}
-                    className="bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    {Object.keys(ASPECT_RATIOS).map((ratio) => (
-                        <option key={ratio} value={ratio}>
-                            {ratio}
-                        </option>
-                    ))}
-                </select>
-            </div>
+        <div className="h-screen w-screen bg-gray-900 text-white">
+            <ResizablePanelGroup direction="horizontal">
+                {/* Left Panel - Project/Assets */}
+                <ResizablePanel defaultSize={15} minSize={10} maxSize={20}>
+                    <div className="h-full p-4 border-r border-gray-700">
+                        <h2 className="text-lg font-semibold mb-4">Project</h2>
+                        {/* Project settings and assets will go here */}
+                    </div>
+                </ResizablePanel>
 
-            {/* Player Container */}
-            <div className="flex-1 flex items-center justify-center">
-                <div
-                    ref={containerRef}
-                    style={{
-                        width: dimensions.width,
-                        height: dimensions.height,
-                    }}
-                    className="relative rounded-xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]"
-                >
-                    <Player
-                        component={Cinema}
-                        durationInFrames={90}
-                        fps={30}
-                        compositionWidth={dimensions.width}
-                        compositionHeight={dimensions.height}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                        }}
-                        controls
-                        autoPlay
-                        loop
-                        inputProps={{
-                            title: "Your Cinematic Title"
-                        }}
+                <ResizableHandle />
+
+                {/* Main Editor Area */}
+                <ResizablePanel defaultSize={65}>
+                    <ResizablePanelGroup direction="vertical">
+                        {/* Video Preview */}
+                        <ResizablePanel defaultSize={70}>
+                            <div className="h-full flex items-center justify-center p-4">
+                                <VideoEditor
+                                    project={project}
+                                    onProjectUpdate={updateProject}
+                                    selectedLayerId={selectedLayerId}
+                                    onLayerSelect={setSelectedLayerId}
+                                />
+                            </div>
+                        </ResizablePanel>
+
+                        <ResizableHandle />
+
+                        {/* Timeline */}
+                        <ResizablePanel defaultSize={30}>
+                            <Timeline
+                                project={project}
+                                onProjectUpdate={updateProject}
+                                selectedLayerId={selectedLayerId}
+                                onLayerSelect={setSelectedLayerId}
+                            />
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
+                </ResizablePanel>
+
+                <ResizableHandle />
+
+                {/* Right Panel - Layer Properties */}
+                <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+                    <LayerPanel
+                        project={project}
+                        onProjectUpdate={updateProject}
+                        selectedLayerId={selectedLayerId}
+                        onLayerSelect={setSelectedLayerId}
+                        onAddLayer={addLayer}
+                        onRemoveLayer={removeLayer}
+                        onUpdateLayer={updateLayer}
+                        onAddComponent={addComponent}
+                        onRemoveComponent={removeComponent}
+                        onUpdateComponent={updateComponent}
                     />
-                </div>
-            </div>
+                </ResizablePanel>
+            </ResizablePanelGroup>
         </div>
     );
 } 
